@@ -5,8 +5,11 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(req){
+    try{
+    await connectDB();
+
     const wh = new Webhook(process.env.SIGNING_SECRET)
-    const headerPayload = await headers()
+    const headerPayload = await headers();
     const svixHeaders = {
         "svix-id": headerPayload.get("svix-id"),
         "svix-timestamp": headerPayload.get("svix-timestamp"),
@@ -23,12 +26,12 @@ export async function POST(req){
 
     const UserData = {
         _id: data.id,
-        email: data.email_addresses[0].email_address,
-        name: `${data.first_name} ${data.last_name}`,
+        email: data.email_addresses?.[0]?.email_address || null,
+        name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim(),
         image: data.image_url,
     };
 
-    await connectDB();
+    // await connectDB();
 
     switch (type) {
         case 'user.created':
@@ -47,4 +50,8 @@ export async function POST(req){
             break;
     }
     return NextResponse.json({message: 'Event Received'});
+  } catch(err) {
+    console.error("Webhook error:", err);
+    return NextResponse.json({ error: "Webhook failed" }, { status: 500 });
+  }
 }
