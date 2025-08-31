@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req){
     try{
-    await connectDB();
+    // await connectDB();
 
     const wh = new Webhook(process.env.SIGNING_SECRET)
     const headerPayload = await headers();
@@ -31,7 +31,7 @@ export async function POST(req){
         image: data.image_url,
     };
 
-    // await connectDB();
+    await connectDB();
 
     switch (type) {
         case 'user.created':
